@@ -10,7 +10,6 @@
 #include <arpa/inet.h>
 
 #define SERV_TCP_PORT 7000
-#define SERV_HOST_ADDR "58.79.216.156"
 //에러 발생시 호출되는 함수로 msg에 해당하는 문구를 perror로 출력후 종료
 void error(char* msg) {
     perror(msg);
