@@ -1,7 +1,8 @@
 /*
-이 코드는 TCP소켓 프로그래밍의 서버측 코드이며, 클라이언트로부터 받은 메시지를 단순히 출력해주는 기능만 구현하였다.
+이 코드는 TCP소켓 프로그래밍의 서버측 코드이다.
 */
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -17,21 +18,15 @@ void error(char* msg) {
 }
 
 int main(int argc, char* argv[]) {
-    int sockfd, newsockfd, clilen;
-    char* pname;
-
+    int sockfd, newsockfd, clilen, pid;
     struct sockaddr_in cli_addr, serv_addr;
 
-    int pid;
-
     char buff[30];
-    pname = argv[0];
 
     //socket호출(도메인은 IPv4, TCP통신을 위한 SOCK_STREAM)
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        puts("Server : socket() error");
-        exit(1);
+        error("server : socket() error");
     }
 
     //서버 주소 설정
@@ -42,8 +37,7 @@ int main(int argc, char* argv[]) {
 
     //서버의 IP주소와 포트번호를 socket descriptor에 할당
     if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
-        puts("Server : bind() error");
-        exit(1);
+        error("server : bind() error");
     }
 
     //연결요청을 대기(대기 큐의 크기 5로 설정)
@@ -55,8 +49,7 @@ int main(int argc, char* argv[]) {
         //newsockfd는 요청이 들어왔을 때 해당 요청을 처리하는 socket descriptor
         newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &clilen);
         if (newsockfd < 0) {
-            puts("Server : accept() error");
-            exit(1);
+            error("server : accept() error");
         }
         //서버는 또 다른 요청을 받아야 하기 때문에 fork를 통해 자식 프로세스가 클라이언트의 요청을 처리
         pid = fork();
@@ -65,8 +58,7 @@ int main(int argc, char* argv[]) {
             close(sockfd);
             //클라이언트로부터 온 메시지를 읽고 출력
             if (read(newsockfd, buff, 29) <= 0) {
-                puts("Server : read() error");
-                exit(1);
+                error("server : read() error");
             }
             printf("Server : Received String = %s\n", buff);
             close(newsockfd);
@@ -74,7 +66,7 @@ int main(int argc, char* argv[]) {
         }
         close(newsockfd);
         if (pid < 0) {
-            puts("Server : fork() error");
+            error("server : fork() error");
         }
     }
     close(sockfd);
